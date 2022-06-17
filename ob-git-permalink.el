@@ -39,6 +39,14 @@
 
 ;; url parse
 
+;; domain user repo (blob + hash | branch) path line
+;; change parser by domain
+(defun git-permalink-parser (url)
+  "Parse url and return parser"
+  (cond ((string-match "^http[s]?://github.com" url) 'git-permalink-github-parser)))
+
+(git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
+
 ;; convert url from normal link to raw file url.
 ;; https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1
 ;; ↓
@@ -47,8 +55,8 @@
 ;; request
 ;; request raw URL and get response body
 
-(defun git-permalink-get-body (url)
-  "Get body from raw file URL."
+(defun git-permalink-request (url)
+  "Get code from raw file URL."
   (let* ((buffer (url-retrieve-synchronously url))
          (contents (with-current-buffer buffer
                      (goto-char (point-min))
@@ -58,11 +66,18 @@
          (body))
     contents))
 
-;; (insert (git-permalink-get-body "https://raw.githubusercontent.com/kijimaD/create-link/main/.gitignore"))
+;; (insert (git-permalink-request "https://raw.githubusercontent.com/kijimaD/create-link/main/.gitignore"))
+
+(defun git-permalink-get-code (url)
+  "parse "
+  (let* ((raw-url)
+         (parser))
+    (setq raw-url url)
+    (git-permalink-request raw-url)))
 
 ;;;###autoload
 (defun org-babel-execute:git-permalink (body params)
-  (let* ((code (git-permalink-get-body body)))
+  (let* ((code (git-permalink-get-code body)))
     (with-temp-buffer
       (insert code)
       (buffer-substring (point-min) (point-max)))))
