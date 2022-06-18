@@ -37,20 +37,73 @@
     (:headers . :any))
   "git-permalink header arguments")
 
+;; parse -> build -> request -> trim line -> display
+
 ;; url parse
+;; github
+;; - blob
+;; - branch
 
 ;; domain user repo (blob + hash | branch) path line
 ;; change parser by domain
 (defun git-permalink-parser (url)
   "Parse url and return parser"
-  (cond ((string-match "^http[s]?://github.com" url) 'git-permalink-github-parser)))
+  (cond ((string-match-p "^http[s]?://github.com" url) 'git-permalink-github-parser)))
 
 (git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
+
+;; TODO: into hash and return
+
+;; https://raw.githubusercontent.com/kijimaD/create-link/main/.gitignore#L1
+(defun git-permalink-parser-github-with-branch (url)
+  "parse github url(branch)"
+  (let* ((domain)
+         (user)
+         (repo)
+         (path)
+         (line))
+    (string-match "http[s]?://raw.githubusercontent.com/\\(.*?\\)/\\(.*?\\)/.*?/\\(.*?\\)#L\\(.*?\\)$" url)
+    (setq user (match-string 1 url))
+    (setq repo (match-string 2 url))
+    (setq path (match-string 3 url))
+    (setq line (match-string 4 url))
+    (concat " " user " " repo " " path " "line)))
+
+(git-permalink-parser-github-with-branch "https://raw.githubusercontent.com/kijimaD/create-link/main/aa/.gitignore#L1")
+
+;; https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1
+(defun git-permalink-parser-github-with-blob (url)
+  "parse github url(blob)"
+  (let* ((domain)
+         (user)
+         (repo)
+         (hash)
+         (path)
+         (line))
+    (string-match "http[s]?://github.com/\\(.*?\\)/\\(.*?\\)/blob/\\(.*?\\)/\\(.*\\)#L\\(.*?\\)$" url)
+    (setq user (match-string 1 url))
+    (setq repo (match-string 2 url))
+    (setq hash (match-string 3 url))
+    (setq path (match-string 4 url))
+    (setq line (match-string 5 url))
+    (concat " " user " " repo " " hash " " path " "line)))
+
+(git-permalink-parser-github-with-blob "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
 
 ;; convert url from normal link to raw file url.
 ;; https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1
 ;; ↓
 ;; https://raw.githubusercontent.com/kijimaD/create-link/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore
+
+;; string interpolation
+(defun git-permalink-build-link (alist)
+  (let* ((link))
+    ;; https://raw.githubusercontent.com/#{user}/#{repo}/#{hash}/#{path}
+    (assoc 'type alist)
+    (assoc 'user alist)
+    (assoc 'repo alist)
+    (assoc 'hash alist)
+    (assoc 'path alist)))
 
 ;; request
 ;; request raw URL and get response body
@@ -73,7 +126,10 @@
   (let* ((raw-url)
          (parser))
     (setq raw-url url)
-    (git-permalink-request raw-url)))
+    ;; get raw file
+    (git-permalink-request raw-url)
+    ;; cut line
+    ))
 
 ;;;###autoload
 (defun org-babel-execute:git-permalink (body params)
