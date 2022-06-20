@@ -75,6 +75,7 @@
 (defun git-permalink-request (url start end)
   "Get code from raw file URL and trim between START and END."
   (let* ((lines)
+         (current-line start)
          (buffer (url-retrieve-synchronously url)))
     (with-current-buffer buffer
       ;; remove request header
@@ -84,11 +85,18 @@
       (kill-line)
 
       ;; trim line
-      (forward-line (- start 1))
+      (forward-line (- current-line 1))
       (push (buffer-substring-no-properties (line-beginning-position) (line-end-position)) lines)
+      (forward-line 1)
+      (while (< (line-number-at-pos) (+ end 1))
+        (when end
+          (progn
+            (push (buffer-substring-no-properties (line-beginning-position) (line-end-position)) lines)
+            (forward-line 1)
+            ))))
     (mapconcat (function (lambda (s) (format "%s" s)))
-               lines
-               "\n"))))
+               (reverse lines)
+               "\n")))
 
 ;; (insert (git-permalink-request "https://raw.githubusercontent.com/kijimaD/create-link/main/.gitignore" 2 20))
 
