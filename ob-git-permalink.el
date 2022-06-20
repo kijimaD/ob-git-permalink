@@ -1,12 +1,14 @@
-;;; ob-git-permalink.el ---                          -*- lexical-binding: t; -*-
+;;; ob-git-permalink.el --- Easy code citation from repository hosting service
 
-;; Copyright (C) 2022 kijimaD
+;; Copyright (C) 2022 kijima Daigo
 
-;; Author: kijimaD <norimaking777@gmail.com>
-;; Version 0.1
+;; Author: kijima Daigo <norimaking777@gmail.com>
+;; Version 0.1.0
 ;; Keywords:git link org-babel
-;; Package-Requires: ((emacs "25.1")  (request "0.3.2"))
+;; Package-Requires: ((emacs "25.1"))
 ;; URL: https://github.com/kijimaD/ob-git-permalink
+
+;; This file is NOT part of GNU Emacs.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -23,11 +25,10 @@
 
 ;;; Commentary:
 
-;; This package provides expanding code from git repository permalink
+;; Org-Babel support for evaluating permalink and insert source code.
 
 ;;; Code:
 (require 'ob)
-(require 'ob-ref)
 
 (add-to-list 'org-babel-tangle-lang-exts '("git-permalink"))
 
@@ -109,7 +110,8 @@
 
 ;;;###autoload
 (defun org-babel-execute:git-permalink (body params)
-  "Resolve BODY permalink and insert source code.  If PARAMS url is specified, the parameter is used."
+  "Resolve BODY permalink and insert source code.
+If PARAMS url is specified, the parameter is used."
   (let* ((params-url (cdr (assq :url params)))
          (url (if params-url
                   params-url
