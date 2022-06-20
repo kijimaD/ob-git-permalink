@@ -45,10 +45,14 @@
     (puthash 'repo (match-string 2 url) hash)
     (puthash 'githash (match-string 3 url) hash)
     (puthash 'path (match-string 4 url) hash)
-    (puthash 'line (match-string 5 url) hash)
+    (puthash 'start (string-to-number (match-string 5 url)) hash)
+    (puthash 'end (if (match-string 6 url)
+                      (string-to-number (match-string 6 url))
+                    nil) hash)
     hash))
 
 (git-permalink-parser-github "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
+(git-permalink-parser-github "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1-L10")
 
 (defun git-permalink-parser (url)
   "Return parser by URL."
@@ -68,35 +72,35 @@
 
 ;; (git-permalink-build-link (git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1"))
 
-(defun git-permalink-request (url line)
-  "Get code from raw file URL and trim LINE."
-  (let* ((buffer (url-retrieve-synchronously url))
-         (contents (with-current-buffer buffer
-                     ;; remove request header
-                     (goto-char (point-min))
-                     (re-search-forward "^$")
-                     (delete-region (point) (point-min))
-                     (kill-line)
+(defun git-permalink-request (url start end)
+  "Get code from raw file URL and trim between START and END."
+  (let* ((lines)
+         (buffer (url-retrieve-synchronously url)))
+    (with-current-buffer buffer
+      ;; remove request header
+      (goto-char (point-min))
+      (re-search-forward "^$")
+      (delete-region (point) (point-min))
+      (kill-line)
 
-                     ;; trim line
-                     (forward-line (- line 1))
-                     (kill-ring-save (line-beginning-position) (line-end-position))
-                     (delete-region (point-min) (point-max))
-                     (yank)
+      ;; trim line
+      (forward-line (- start 1))
+      (push (buffer-substring-no-properties (line-beginning-position) (line-end-position)) lines)
+    (mapconcat (function (lambda (s) (format "%s" s)))
+               lines
+               "\n"))))
 
-                     (buffer-string))))
-    contents))
-
-;; (insert (git-permalink-request "https://raw.githubusercontent.com/kijimaD/create-link/main/.gitignore"))
+;; (insert (git-permalink-request "https://raw.githubusercontent.com/kijimaD/create-link/main/.gitignore" 2 20))
 
 (defun git-permalink-get-code (url)
   "Get code by URL."
-  (let* ((parser-hash)
-         (request-url))
-    (setq parser-hash (git-permalink-parser url))
-    (setq request-url (git-permalink-build-link parser-hash))
-    (git-permalink-request request-url
-                           (string-to-number (gethash 'line parser-hash)))))
+  (let* ((parser-hash (git-permalink-parser url))
+         (request-url (git-permalink-build-link parser-hash))
+         (start (gethash 'start parser-hash))
+         (end (if (gethash 'start parser-hash)
+                   (gethash 'end parser-hash)
+                 start)))
+    (git-permalink-request request-url start end)))
 
 ;;;###autoload
 (defun org-babel-execute:git-permalink (body params)
