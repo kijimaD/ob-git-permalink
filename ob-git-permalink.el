@@ -40,7 +40,7 @@
 (defun git-permalink-parser-github (url)
   "Parse GitHub URL and return result hash."
   (let* ((hash (make-hash-table)))
-    (string-match "http[s]?://github.com/\\(.*?\\)/\\(.*?\\)/blob/\\(.*?\\)/\\(.*\\)#L\\(.*?\\)$" url)
+    (string-match "http[s]?://github.com/\\(.*?\\)/\\(.*?\\)/blob/\\(.*?\\)/\\(.*\\)#L\\(.*?\\)\\(?:-L\\(.*?\\)\\)?$" url)
     (puthash 'user (match-string 1 url) hash)
     (puthash 'repo (match-string 2 url) hash)
     (puthash 'githash (match-string 3 url) hash)
