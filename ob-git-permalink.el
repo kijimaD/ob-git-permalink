@@ -35,17 +35,10 @@
   '((:url . :any)
     (:variables . :any)
     (:headers . :any))
-  "git-permalink header arguments")
-
-;; parse -> build -> request -> trim line -> display
-
-;; url parse
-;; github
-;; - blob
-;; - branch
+  "Babel header arguments.")
 
 (defun git-permalink-parser-github (url)
-  "parse github url(blob)"
+  "Parse GitHub URL and return result hash."
   (let* ((hash (make-hash-table)))
     (string-match "http[s]?://github.com/\\(.*?\\)/\\(.*?\\)/blob/\\(.*?\\)/\\(.*\\)#L\\(.*?\\)$" url)
     (puthash 'user (match-string 1 url) hash)
@@ -57,21 +50,14 @@
 
 (git-permalink-parser-github "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
 
-;; domain user repo (blob + hash | branch) path line
-;; change parser by domain
 (defun git-permalink-parser (url)
-  "Parse url and return parser"
+  "Return parser by URL."
   (cond ((string-match-p "^http[s]?://github.com" url) (git-permalink-parser-github url))))
 
 ;; (git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
 
-;; convert url from normal link to raw file url.
-;; https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1
-;; ↓
-;; https://raw.githubusercontent.com/kijimaD/create-link/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore
-
-;; string interpolation
 (defun git-permalink-build-link (hash)
+  "Build link with HASH."
   (when (not (hash-table-p hash))
     (error "Argument Error: HASH is not hash table"))
   (let* ((user (gethash 'user hash))
@@ -81,9 +67,6 @@
     (format "https://raw.githubusercontent.com/%s/%s/%s/%s" user repo githash path)))
 
 ;; (git-permalink-build-link (git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1"))
-
-;; request
-;; request raw URL and get response body
 
 (defun git-permalink-request (url line)
   "Get code from raw file URL and trim LINE."
@@ -96,9 +79,8 @@
                      (kill-line)
 
                      ;; trim line
-                     (goto-line line)
+                     (forward-line (- line 1))
                      (kill-ring-save (line-beginning-position) (line-end-position))
-
                      (delete-region (point-min) (point-max))
                      (yank)
 
@@ -108,7 +90,7 @@
 ;; (insert (git-permalink-request "https://raw.githubusercontent.com/kijimaD/create-link/main/.gitignore"))
 
 (defun git-permalink-get-code (url)
-  "parse url"
+  "Get code by URL."
   (let* ((parser-hash)
          (request-url))
     (setq parser-hash (git-permalink-parser url))
@@ -118,7 +100,7 @@
 
 ;;;###autoload
 (defun org-babel-execute:git-permalink (body params)
-  "get code"
+  "Resolve BODY permalink with PARAMS and insert source code."
   (let* ((code (git-permalink-get-code body)))
     (with-temp-buffer
       (insert code)
