@@ -32,10 +32,8 @@
 (add-to-list 'org-babel-tangle-lang-exts '("git-permalink"))
 
 (defconst org-babel-header-args:git-permalink
-  '((:url . :any)
-    (:variables . :any)
-    (:headers . :any))
-  "Babel header arguments.")
+  '((:url . :any))
+  "Babel git-permalink arguments.")
 
 (defun git-permalink-parser-github (url)
   "Parse GitHub URL and return result hash."
@@ -88,12 +86,11 @@
       (forward-line (- current-line 1))
       (push (buffer-substring-no-properties (line-beginning-position) (line-end-position)) lines)
       (forward-line 1)
-      (while (< (line-number-at-pos) (+ end 1))
-        (when end
+      (when end
+        (while (< (line-number-at-pos) (+ end 1))
           (progn
             (push (buffer-substring-no-properties (line-beginning-position) (line-end-position)) lines)
-            (forward-line 1)
-            ))))
+            (forward-line 1)))))
     (mapconcat (function (lambda (s) (format "%s" s)))
                (reverse lines)
                "\n")))
