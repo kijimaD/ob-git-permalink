@@ -44,51 +44,26 @@
 ;; - blob
 ;; - branch
 
+(defun git-permalink-parser-github (url)
+  "parse github url(blob)"
+  (let* ((hash (make-hash-table)))
+    (string-match "http[s]?://github.com/\\(.*?\\)/\\(.*?\\)/blob/\\(.*?\\)/\\(.*\\)#L\\(.*?\\)$" url)
+    (puthash 'user (match-string 1 url) hash)
+    (puthash 'repo (match-string 2 url) hash)
+    (puthash 'githash (match-string 3 url) hash)
+    (puthash 'path (match-string 4 url) hash)
+    (puthash 'line (match-string 5 url) hash)
+    hash))
+
+(git-permalink-parser-github "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
+
 ;; domain user repo (blob + hash | branch) path line
 ;; change parser by domain
 (defun git-permalink-parser (url)
   "Parse url and return parser"
-  (cond ((string-match-p "^http[s]?://github.com" url) 'git-permalink-github-parser)))
+  (cond ((string-match-p "^http[s]?://github.com" url) (git-permalink-parser-github url))))
 
-(git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
-
-;; TODO: into hash and return
-
-;; https://raw.githubusercontent.com/kijimaD/create-link/main/.gitignore#L1
-(defun git-permalink-parser-github-with-branch (url)
-  "parse github url(branch)"
-  (let* ((domain)
-         (user)
-         (repo)
-         (path)
-         (line))
-    (string-match "http[s]?://raw.githubusercontent.com/\\(.*?\\)/\\(.*?\\)/.*?/\\(.*?\\)#L\\(.*?\\)$" url)
-    (setq user (match-string 1 url))
-    (setq repo (match-string 2 url))
-    (setq path (match-string 3 url))
-    (setq line (match-string 4 url))
-    (concat " " user " " repo " " path " "line)))
-
-(git-permalink-parser-github-with-branch "https://raw.githubusercontent.com/kijimaD/create-link/main/aa/.gitignore#L1")
-
-;; https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1
-(defun git-permalink-parser-github-with-blob (url)
-  "parse github url(blob)"
-  (let* ((domain)
-         (user)
-         (repo)
-         (hash)
-         (path)
-         (line))
-    (string-match "http[s]?://github.com/\\(.*?\\)/\\(.*?\\)/blob/\\(.*?\\)/\\(.*\\)#L\\(.*?\\)$" url)
-    (setq user (match-string 1 url))
-    (setq repo (match-string 2 url))
-    (setq hash (match-string 3 url))
-    (setq path (match-string 4 url))
-    (setq line (match-string 5 url))
-    (concat " " user " " repo " " hash " " path " "line)))
-
-(git-permalink-parser-github-with-blob "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
+;; (git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
 
 ;; convert url from normal link to raw file url.
 ;; https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1
@@ -96,14 +71,16 @@
 ;; https://raw.githubusercontent.com/kijimaD/create-link/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore
 
 ;; string interpolation
-(defun git-permalink-build-link (alist)
-  (let* ((link))
-    ;; https://raw.githubusercontent.com/#{user}/#{repo}/#{hash}/#{path}
-    (assoc 'type alist)
-    (assoc 'user alist)
-    (assoc 'repo alist)
-    (assoc 'hash alist)
-    (assoc 'path alist)))
+(defun git-permalink-build-link (hash)
+  (when (not (hash-table-p hash))
+    (error "Argument Error: HASH is not hash table"))
+  (let* ((user (gethash 'user hash))
+         (repo (gethash 'repo hash))
+         (githash (gethash 'githash hash))
+         (path (gethash 'path hash)))
+    (format "https://raw.githubusercontent.com/%s/%s/%s/%s" user repo githash path)))
+
+;; (git-permalink-build-link (git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1"))
 
 ;; request
 ;; request raw URL and get response body
@@ -115,24 +92,24 @@
                      (goto-char (point-min))
                      (re-search-forward "^$")
                      (delete-region (point) (point-min))
-                     (buffer-string)))
-         (body))
+                     (buffer-string))))
     contents))
 
 ;; (insert (git-permalink-request "https://raw.githubusercontent.com/kijimaD/create-link/main/.gitignore"))
 
 (defun git-permalink-get-code (url)
-  "parse "
-  (let* ((raw-url)
-         (parser))
-    (setq raw-url url)
-    ;; get raw file
-    (git-permalink-request raw-url)
-    ;; cut line
+  "parse url"
+  (let* ((parser)
+         (request-url))
+    (setq parser (git-permalink-parser url))
+    (setq request-url (git-permalink-build-link parser))
+    (git-permalink-request request-url)
+    ;; TODO: cut line
     ))
 
 ;;;###autoload
 (defun org-babel-execute:git-permalink (body params)
+  "get code"
   (let* ((code (git-permalink-get-code body)))
     (with-temp-buffer
       (insert code)
