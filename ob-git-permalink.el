@@ -85,13 +85,23 @@
 ;; request
 ;; request raw URL and get response body
 
-(defun git-permalink-request (url)
-  "Get code from raw file URL."
+(defun git-permalink-request (url line)
+  "Get code from raw file URL and trim LINE."
   (let* ((buffer (url-retrieve-synchronously url))
          (contents (with-current-buffer buffer
+                     ;; remove request header
                      (goto-char (point-min))
                      (re-search-forward "^$")
                      (delete-region (point) (point-min))
+                     (kill-line)
+
+                     ;; trim line
+                     (goto-line line)
+                     (kill-ring-save (line-beginning-position) (line-end-position))
+
+                     (delete-region (point-min) (point-max))
+                     (yank)
+
                      (buffer-string))))
     contents))
 
@@ -99,13 +109,12 @@
 
 (defun git-permalink-get-code (url)
   "parse url"
-  (let* ((parser)
+  (let* ((parser-hash)
          (request-url))
-    (setq parser (git-permalink-parser url))
-    (setq request-url (git-permalink-build-link parser))
-    (git-permalink-request request-url)
-    ;; TODO: cut line
-    ))
+    (setq parser-hash (git-permalink-parser url))
+    (setq request-url (git-permalink-build-link parser-hash))
+    (git-permalink-request request-url
+                           (string-to-number (gethash 'line parser-hash)))))
 
 ;;;###autoload
 (defun org-babel-execute:git-permalink (body params)
