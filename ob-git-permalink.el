@@ -100,8 +100,12 @@
 
 ;;;###autoload
 (defun org-babel-execute:git-permalink (body params)
-  "Resolve BODY permalink with PARAMS and insert source code."
-  (let* ((code (git-permalink-get-code body)))
+  "Resolve BODY permalink and insert source code.  If PARAMS url is specified, the parameter is used."
+  (let* ((params-url (cdr (assq :url params)))
+         (url (if params-url
+                  params-url
+                body))
+         (code (git-permalink-get-code url)))
     (with-temp-buffer
       (insert code)
       (buffer-substring (point-min) (point-max)))))
