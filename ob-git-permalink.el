@@ -1,9 +1,9 @@
-;;; ob-git-permalink.el --- Easy code citation from repository hosting service
+;;; ob-git-permalink.el --- Easy code citation from repository hosting service for org-babel
 
 ;; Copyright (C) 2022 kijima Daigo
 
 ;; Author: kijima Daigo <norimaking777@gmail.com>
-;; Version 0.1.0
+;; Version: 0.1.0
 ;; Keywords:git link org-babel
 ;; Package-Requires: ((emacs "25.1"))
 ;; URL: https://github.com/kijimaD/ob-git-permalink
