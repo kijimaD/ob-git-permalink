@@ -52,18 +52,18 @@
 
 (defun git-permalink-parser (url)
   "Choose parser by URL."
-  (cond ((string-match-p "^http[s]?://github.com" url) (git-permalink-parser-github url))))
+  (cond ((string-match-p "^http[s]?://github.com" url) 'git-permalink-parser-github)))
 
 ;; (git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
 
-(defun git-permalink-build-link (hash)
-  "Build link with HASH."
-  (when (not (hash-table-p hash))
+(defun git-permalink-build-link (hash-table)
+  "Build link with HASH-TABLE."
+  (when (not (hash-table-p hash-table))
     (error "Argument Error: HASH is not hash table"))
-  (let* ((user (gethash 'user hash))
-         (repo (gethash 'repo hash))
-         (githash (gethash 'githash hash))
-         (path (gethash 'path hash)))
+  (let* ((user (gethash 'user hash-table))
+         (repo (gethash 'repo hash-table))
+         (githash (gethash 'githash hash-table))
+         (path (gethash 'path hash-table)))
     (format "https://raw.githubusercontent.com/%s/%s/%s/%s" user repo githash path)))
 
 ;; (git-permalink-build-link (git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1"))
@@ -97,11 +97,12 @@
 
 (defun git-permalink-get-code (url)
   "Get code by URL."
-  (let* ((parser-hash (git-permalink-parser url))
-         (request-url (git-permalink-build-link parser-hash))
-         (start (gethash 'start parser-hash))
-         (end (if (gethash 'start parser-hash)
-                   (gethash 'end parser-hash)
+  (let* ((parser (git-permalink-parser url))
+         (hash-table (funcall parser url))
+         (request-url (git-permalink-build-link hash-table))
+         (start (gethash 'start hash-table))
+         (end (if (gethash 'start hash-table)
+                   (gethash 'end hash-table)
                  start)))
     (git-permalink-request request-url start end)))
 
