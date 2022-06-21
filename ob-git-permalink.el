@@ -50,11 +50,8 @@
                     nil) hash)
     hash))
 
-(git-permalink-parser-github "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
-(git-permalink-parser-github "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1-L10")
-
 (defun git-permalink-parser (url)
-  "Return parser by URL."
+  "Choose parser by URL."
   (cond ((string-match-p "^http[s]?://github.com" url) (git-permalink-parser-github url))))
 
 ;; (git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
