@@ -1,0 +1,4 @@
+.cask
+ob-git-permalink.elc
+ob-git-permalink-autoloads.*
+test/test-autoloads.*
