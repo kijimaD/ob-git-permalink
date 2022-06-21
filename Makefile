@@ -1,4 +1,4 @@
-cask-install:
+package-install:
 	git clone https://github.com/cask/cask ~/.cask
 	~/.cask/bin/cask install
 
