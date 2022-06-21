@@ -52,9 +52,8 @@
 
 (defun git-permalink-parser (url)
   "Choose parser by URL."
-  (cond ((string-match-p "^http[s]?://github.com" url) 'git-permalink-parser-github)))
-
-;; (git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1")
+  (cond ((string-match-p "^http[s]?://github.com" url) 'git-permalink-parser-github)
+        (t (error "Not found parser"))))
 
 (defun git-permalink-build-link (hash-table)
   "Build link with HASH-TABLE."
@@ -65,8 +64,6 @@
          (githash (gethash 'githash hash-table))
          (path (gethash 'path hash-table)))
     (format "https://raw.githubusercontent.com/%s/%s/%s/%s" user repo githash path)))
-
-;; (git-permalink-build-link (git-permalink-parser "https://github.com/kijimaD/create-link/blob/e765b1067ced891a90ba0478af7fe675cff9b713/.gitignore#L1"))
 
 (defun git-permalink-request (url start end)
   "Get code from raw file URL and trim between START and END."
@@ -92,8 +89,6 @@
     (mapconcat (function (lambda (s) (format "%s" s)))
                (reverse lines)
                "\n")))
-
-;; (insert (git-permalink-request "https://raw.githubusercontent.com/kijimaD/create-link/main/.gitignore" 2 20))
 
 (defun git-permalink-get-code (url)
   "Get code by URL."
