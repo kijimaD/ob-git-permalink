@@ -1,10 +1,10 @@
-;;; ob-git-permalink.el --- Easy code citation from repository hosting service for org-babel
+;;; ob-git-permalink.el --- Easy code citation from hosting service
 
 ;; Copyright (C) 2022 kijima Daigo
 
 ;; Author: kijima Daigo <norimaking777@gmail.com>
 ;; Version: 0.1.0
-;; Keywords:git link org-babel
+;; Keywords: docs convenience
 ;; Package-Requires: ((emacs "25.1"))
 ;; URL: https://github.com/kijimaD/ob-git-permalink
 
@@ -34,9 +34,9 @@
 
 (defconst org-babel-header-args:git-permalink
   '((:url . :any))
-  "Babel git-permalink arguments.")
+  "Org Babel git-permalink arguments.")
 
-(defun git-permalink-parser-github (url)
+(defun ob-git-permalink-parser-github (url)
   "Parse GitHub URL and return result hash."
   (let* ((hash (make-hash-table)))
     (string-match "http[s]?://github.com/\\(.*?\\)/\\(.*?\\)/blob/\\(.*?\\)/\\(.*\\)#L\\(.*?\\)\\(?:-L\\(.*?\\)\\)?$" url)
@@ -50,12 +50,12 @@
                     nil) hash)
     hash))
 
-(defun git-permalink-parser (url)
+(defun ob-git-permalink-parser (url)
   "Choose parser by URL."
-  (cond ((string-match-p "^http[s]?://github.com" url) 'git-permalink-parser-github)
+  (cond ((string-match-p "^http[s]?://github.com" url) 'ob-git-permalink-parser-github)
         (t (error "Not found parser"))))
 
-(defun git-permalink-build-link (hash-table)
+(defun ob-git-permalink-build-link (hash-table)
   "Build link with HASH-TABLE."
   (when (not (hash-table-p hash-table))
     (error "Argument Error: HASH is not hash table"))
@@ -65,7 +65,7 @@
          (path (gethash 'path hash-table)))
     (format "https://raw.githubusercontent.com/%s/%s/%s/%s" user repo githash path)))
 
-(defun git-permalink-request (url start end)
+(defun ob-git-permalink-request (url start end)
   "Get code from raw file URL and trim between START and END."
   (let* ((lines)
          (current-line start)
@@ -90,16 +90,16 @@
                (reverse lines)
                "\n")))
 
-(defun git-permalink-get-code (url)
+(defun ob-git-permalink-get-code (url)
   "Get code by URL."
-  (let* ((parser (git-permalink-parser url))
+  (let* ((parser (ob-git-permalink-parser url))
          (hash-table (funcall parser url))
-         (request-url (git-permalink-build-link hash-table))
+         (request-url (ob-git-permalink-build-link hash-table))
          (start (gethash 'start hash-table))
          (end (if (gethash 'start hash-table)
                    (gethash 'end hash-table)
                  start)))
-    (git-permalink-request request-url start end)))
+    (ob-git-permalink-request request-url start end)))
 
 ;;;###autoload
 (defun org-babel-execute:git-permalink (body params)
@@ -109,7 +109,7 @@ If PARAMS url is specified, the parameter is used."
          (url (if params-url
                   params-url
                 body))
-         (code (git-permalink-get-code url)))
+         (code (ob-git-permalink-get-code url)))
     (with-temp-buffer
       (insert code)
       (buffer-substring (point-min) (point-max)))))
