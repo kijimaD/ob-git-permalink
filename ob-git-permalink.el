@@ -1,4 +1,4 @@
-;;; ob-git-permalink.el --- Easy code citation from hosting service
+;;; ob-git-permalink.el --- Easy code citation from hosting service -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022 kijima Daigo
 

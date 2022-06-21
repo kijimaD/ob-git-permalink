@@ -1,4 +1,4 @@
-;;; ob-git-permalink-test.el --- Tests for ob-git-permalink
+;;; ob-git-permalink-test.el --- Tests for ob-git-permalink -*- lexical-binding: t -*-
 
 (require 'ob-git-permalink)
 (require 'ert)
