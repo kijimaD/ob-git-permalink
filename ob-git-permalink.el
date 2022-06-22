@@ -32,10 +32,6 @@
 
 (add-to-list 'org-babel-tangle-lang-exts '("git-permalink"))
 
-(defconst org-babel-header-args:git-permalink
-  '((:url . :any))
-  "Org Babel git-permalink arguments.")
-
 (defun ob-git-permalink-parser-github (url)
   "Parse GitHub URL and return result hash."
   (let* ((hash (make-hash-table)))
