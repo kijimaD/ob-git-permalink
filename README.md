@@ -18,7 +18,8 @@ https://github.com/emacs-mirror/emacs/blob/a4dcc8b9a94466c792be3743760a4a45cf6e1
 
 ## How to get permalink?
 
-[git-link](https://github.com/sshaw/git-link) is very useful.
+- Emacs: [git-link](https://github.com/sshaw/git-link) is very useful.
+- GitHub Web UI: [Creating a permanent link to a code snippet \- GitHub Docs](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-a-permanent-link-to-a-code-snippet)
 
 ## Other notation
 
