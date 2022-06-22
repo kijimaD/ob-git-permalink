@@ -1,4 +1,6 @@
-Easy code citation from repository hosting service for org-babel.
+[![Test](https://github.com/kijimaD/ob-git-permalink/actions/workflows/test.yml/badge.svg)](https://github.com/kijimaD/ob-git-permalink/actions/workflows/test.yml)
+
+Org-Babel support for evaluating permalink and insert source code.
 
 ## Usage
 
