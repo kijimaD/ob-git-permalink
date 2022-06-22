@@ -31,5 +31,5 @@ jobs:
       run: make package-lint
     - name: byte-compile
       run: make byte-compile
-    - name: elisp-lint
-      run: make elisp-lint
+    # - name: elisp-lint
+    #   run: make elisp-lint
