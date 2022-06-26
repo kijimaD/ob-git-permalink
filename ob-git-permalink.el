@@ -1,4 +1,4 @@
-;;; ob-git-permalink.el --- Easy code citation from hosting service -*- lexical-binding: t -*-
+;;; ob-git-permalink.el --- Import GitHub code given a permalink -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022 kijima Daigo
 
@@ -25,7 +25,17 @@
 
 ;;; Commentary:
 
-;; Org-Babel support for evaluating permalink and insert source code.
+;; Import GitHub code given a permalink.
+
+;; #+begin_src git-permalink
+;; https://github.com/emacs-mirror/emacs/blob/a4dcc8b9a94466c792be3743760a4a45cf6e1e61/README#L1-L2
+;; #+end_src
+
+;; ↓ evaluate(C-c)
+
+;; #+RESULTS:
+;; : Copyright (C) 2001-2022 Free Software Foundation, Inc.
+;; : See the end of the file for license conditions.
 
 ;;; Code:
 (require 'ob)
