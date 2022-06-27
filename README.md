@@ -1,3 +1,4 @@
+[![MELPA](https://melpa.org/packages/ob-git-permalink-badge.svg)](https://melpa.org/#/ob-git-permalink)
 [![Test](https://github.com/kijimaD/ob-git-permalink/actions/workflows/test.yml/badge.svg)](https://github.com/kijimaD/ob-git-permalink/actions/workflows/test.yml)
 
 Org-Babel support for evaluating permalink and insert source code.
